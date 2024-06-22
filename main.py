@@ -301,13 +301,19 @@ weighted_normalized_results = normalize_weight_matrix(crisp_results)
 
 positive_ideal_solution = np.max(weighted_normalized_results, axis=0)
 negative_ideal_solution = np.min(weighted_normalized_results, axis=0)
+
+# print(positive_ideal_solution)
+# print(negative_ideal_solution)
+
 positive_distance = np.sqrt(
     np.sum((weighted_normalized_results - positive_ideal_solution) ** 2, axis=1)
 )
 negative_distance = np.sqrt(
     np.sum((weighted_normalized_results - negative_ideal_solution) ** 2, axis=1)
 )
-# print(positive_distance, negative_distance)
+
+# print(positive_distance)
+# print(negative_distance)
 
 closeness_coefficient = negative_distance / (positive_distance - negative_distance)
 # print(closeness_coefficient)

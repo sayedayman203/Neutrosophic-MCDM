@@ -26,9 +26,9 @@ criterias = [
     "Shortness of breath",
     "Fever",
 ]
+beneficials = [True, True, True, True, True, False, True, False, True]
 
 alternates = ["H1N1", "COVID-19", "H5N1", "Hanta Virus", "SARS"]
-
 
 # BWM
 compared2best = dict(
@@ -270,11 +270,39 @@ def aggregate_decisions(decisions):
 aggregated_results = aggregate_decisions(decisions)
 # print(aggregated_results)
 
-crisp_results = [
-    [criteria.de_nutrosophication() for criteria in alternative]
-    for alternative in aggregated_results
-]
+crisp_results = np.array(
+    [
+        [criteria.de_nutrosophication() for criteria in alternative]
+        for alternative in aggregated_results
+    ],
+    dtype=np.double,
+)
 
+# criterias = ["Price To Cost", "Storage Space", "Camera", "Looks"]
+# beneficials = [False, True, True, True]
+
+# alternates = ["Mobile 1", "Mobile 2", "Mobile 3", "Mobile 4", "Mobile 5"]
+
+# weights_in_criterias_order = np.array(
+#     [
+#         0.25,
+#         0.25,
+#         0.25,
+#         0.25,
+#     ]
+# )
+
+
+# crisp_results = np.array(
+#     [
+#         [250, 16, 12, 5],
+#         [200, 16, 8, 3],
+#         [300, 32, 16, 4],
+#         [275, 32, 8, 4],
+#         [225, 16, 16, 2],
+#     ],
+#     dtype=np.double,
+# )
 # crisp_results = np.array(
 #     [
 #         [0.536, 0.564, 0.763, 0.943, 0.728, 0.734, 0.800, 0.827, 0.910],
@@ -288,7 +316,6 @@ crisp_results = [
 
 
 def normalize_weight_matrix(matrix):
-    matrix = np.array(matrix)
     rows, cols = matrix.shape
 
     normalization_factors = np.empty(cols, dtype=np.double)
@@ -309,9 +336,17 @@ def normalize_weight_matrix(matrix):
 weighted_normalized_results = normalize_weight_matrix(crisp_results)
 # print(weighted_normalized_results)
 
-positive_ideal_solution = np.max(weighted_normalized_results, axis=0)
-negative_ideal_solution = np.min(weighted_normalized_results, axis=0)
+max_values = np.max(weighted_normalized_results, axis=0)
+min_values = np.min(weighted_normalized_results, axis=0)
 
+positive_ideal_solution = [
+    max_values[idx] if benefit else min_values[idx]
+    for idx, benefit in enumerate(beneficials)
+]
+negative_ideal_solution = [
+    min_values[idx] if benefit else max_values[idx]
+    for idx, benefit in enumerate(beneficials)
+]
 # print(positive_ideal_solution)
 # print(negative_ideal_solution)
 
@@ -325,8 +360,8 @@ negative_distance = np.sqrt(
 # print(positive_distance)
 # print(negative_distance)
 
-closeness_coefficient = negative_distance / (positive_distance - negative_distance)
-# print(closeness_coefficient)
+closeness_coefficient = negative_distance / (positive_distance + negative_distance)
+print(closeness_coefficient)
 
 ranked_alternatives = np.argsort(closeness_coefficient)[::-1]
 ranked_alternatives = [alternates[i] for i in ranked_alternatives]
